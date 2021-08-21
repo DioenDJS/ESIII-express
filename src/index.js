@@ -41,6 +41,9 @@ app.get('/client/:id', (request, response) =>{
     const clientSelect = client.filter(element => (element.id === id ))
         .find(element => element.createdAt === "");
 
+    if(clientSelect === undefined){
+        return response.status(400).json({error:'Requisição inválida !!'});
+    }
     return response.status(200).json(clientSelect);
 });
 
@@ -48,24 +51,28 @@ app.get('/client/:id', (request, response) =>{
 app.post('/client', (request, response) =>{
     const {name, telephone} = request.body;
 
-    client.push({
-        "id": faker.datatype.uuid(),
-        "name": name,
-        "telephone": telephone,
-        "createdAt": ""
-    });
-    return response.status(201).json(client);
+        client.push({
+            "id": faker.datatype.uuid(),
+            "name": name,
+            "telephone": telephone,
+            "createdAt": ""
+        });
+        return response.status(201).json({msg:`Seja Bem Vindo ${name}`});
+
 });
 
 
 //Atualizando name de um client especificado por "id"
 app.put('/client/:id', (request, response) =>{
-    const id = request.params.id;
+    const {id} = request.params;
     const nome = request.body.name;
 
-    const clientAltualizar = client.filter((value) => value.id === id);
+    const clientAltualizar = client.find((value) => value.id === id);
 
-    clientAltualizar[0].name = nome;
+    if(clientAltualizar === undefined){
+        return response.status(400).json({error:'Requisição inválida !!'})
+    }
+    clientAltualizar.name = nome;
 
     return response.status(200).json(clientAltualizar);
 });
@@ -73,15 +80,17 @@ app.put('/client/:id', (request, response) =>{
 //Deletando client por "id" selecionado
 app.delete('/client/:id', (request, response) =>{
 
-    const id = request.params.id;
+    const {id} = request.params;
+    const clientDelete = client.find( value => value.id === id );
 
-    const clientDelete = client.filter( value => value.id === id );
-
+    if(clientDelete === undefined){
+        return response.status(400).send()
+    }
     /* setando a o campo createAt que vai receber a data que este cliente passa a ser considerado 
     deletado e nao ira aparecer mais nas listagens de clientes*/
-    clientDelete[0].createdAt = new Date();
+    clientDelete.createdAt = new Date();
 
-    return response.status(200).json({"Cliente":`${clientDelete[0].name} foi deletado `});
+    return response.status(204).json({"Cliente":`${clientDelete.name} foi deletado `});
 })
 
 app.listen(3333, console.log("run server !!!"));
