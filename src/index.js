@@ -7,21 +7,29 @@ for(let i = 0; i < 3; i++) {
         id: faker.datatype.uuid(),
         name: faker.name.findName(),
         telephone: faker.phone.phoneNumber(),
-        createAt: ""
+        createdAt: ""
     }
     client.push(obj);
 }
-// console.log(client);
 
 const app = express();
 
+//craindo um Middlewares
+function log(request, response, next){
+    const {url, method} = request;
+    console.log(`${method} - ${url} at ${new Date()}`);
+    return next();
+}
+
 app.use(express.json());
+
+app.use(log);
 
 //Retornando todos os clientes 
 app.get('/client', (request, response) =>{
 
    
-        const listClient = client.filter( value => value.createAt === "");
+        const listClient = client.filter( value => value.createdAt === "");
         return response.status(200).json(listClient)
     
 });
@@ -30,7 +38,9 @@ app.get('/client', (request, response) =>{
 //retornando apenas um cliente especificado por "id"
 app.get('/client/:id', (request, response) =>{
     const { id } = request.params;
-    const clientSelect = client.filter(element => element.id === id)
+    const clientSelect = client.filter(element => (element.id === id ))
+        .find(element => element.createdAt === "");
+
     return response.status(200).json(clientSelect);
 });
 
@@ -42,6 +52,7 @@ app.post('/client', (request, response) =>{
         "id": faker.datatype.uuid(),
         "name": name,
         "telephone": telephone,
+        "createdAt": ""
     });
     return response.status(201).json(client);
 });
@@ -68,9 +79,9 @@ app.delete('/client/:id', (request, response) =>{
 
     /* setando a o campo createAt que vai receber a data que este cliente passa a ser considerado 
     deletado e nao ira aparecer mais nas listagens de clientes*/
-    clientDelete[0].createAt = new Date();
+    clientDelete[0].createdAt = new Date();
 
-    return response.status(200).send();
+    return response.status(200).json({"Cliente":`${clientDelete[0].name} foi deletado `});
 })
 
 app.listen(3333, console.log("run server !!!"));
